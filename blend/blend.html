@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anarxgrif Spotify</title>
+    
+    <style>
+        body {
+            background-color: black;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .spotify-player {
+            border-radius: 30px;
+            overflow: hidden;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 0px 30px rgba(232, 119, 49, 0.9);
+        }
+        
+        .timer-container {
+            margin: -15px ;
+            color: white;
+            font-size: 1.5em;
+            background-color: rgba(232, 119, 49, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 750px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        #timer {
+            font-weight: bold;
+            color: #e87731;
+            font-size: 1.2em;
+        }
+        
+        .join-button {
+            background-color: rgba(232, 119, 49, 0.2);;
+            border: none;
+            padding: 10px 300px;
+            color: white;
+            font-size: 22px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin: 30px 0;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .join-button:hover {
+            background-color: rgba(241, 100, 12, 0.512);
+            transform: scale(1.02);
+        }
+        
+        .join-button:active {
+            transform: scale(0.98);
+        }
+        
+        .buttons-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            max-width: 750px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>СИНТЕЗ ANARXGRIF</h1>
+        
+        <!-- Таймер -->
+        <div class="timer-container">
+            <div>Обновление синтеза через</div>
+            <div id="timer">00:00:00</div>
+        </div>
+
+        <!-- Кнопки -->
+        <div class="buttons-container">
+            <!-- Кнопка "Хочешь присоединиться?" -->
+            <a href="https://open.spotify.com/blend/taste-match/8b679bf62b4e6018?si=qU2XmmrZSIWPiFiMVsY1PQ&fallback=getapp&blendDecoration=5f9c38d2" 
+               class="join-button" 
+               target="_blank">
+                Хочешь присоединиться?
+            </a>
+        </div>
+        
+        <div class="spotify-player">
+            <iframe 
+                data-testid="embed-iframe" 
+                src="https://open.spotify.com/embed/playlist/37i9dQZF1EJDhCDHhATrgA?utm_source=generator" 
+                width="100%" 
+                height="890" 
+                frameBorder="0" 
+                allowfullscreen="" 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy">
+            </iframe>
+        </div>
+    </div>
+
+    <script>
+        function updateTimer() {
+            const now = new Date();
+            const target = new Date();
+            
+            // Устанавливаем целевое время на 12:00 сегодня
+            target.setHours(12, 0, 0, 0);
+            
+            // Если уже прошло 12:00 сегодня, устанавливаем на завтра
+            if (now > target) {
+                target.setDate(target.getDate() + 1);
+            }
+            
+            // Вычисляем разницу во времени
+            const diff = target - now;
+            
+            // Преобразуем разницу в часы, минуты и секунды
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            // Форматируем время с ведущими нулями
+            const formattedTime = 
+                String(hours).padStart(2, '0') + ':' + 
+                String(minutes).padStart(2, '0') + ':' + 
+                String(seconds).padStart(2, '0');
+            
+            // Обновляем элемент таймера
+            document.getElementById('timer').textContent = formattedTime;
+        }
+        
+        // Обновляем таймер сразу при загрузке
+        updateTimer();
+        
+        // Обновляем таймер каждую секунду
+        setInterval(updateTimer, 1000);
+    </script>
+</body>
+</html>
