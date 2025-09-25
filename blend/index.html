@@ -16,18 +16,34 @@
             align-items: center;
             font-family: Arial, sans-serif;
             flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Контейнер для интерактивного фона */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
         }
         
         .container {
             max-width: 1200px;
             width: 100%;
             text-align: center;
+            z-index: 1;
+            position: relative;
         }
         
         h1 {
             color: white;
             margin-bottom: 30px;
             font-size: 2.5em;
+            text-shadow: 0 0 10px rgba(232, 119, 49, 0.7);
         }
         
         .spotify-player {
@@ -36,6 +52,8 @@
             max-width: 800px;
             margin: 0 auto;
             box-shadow: 0 0px 30px rgba(232, 119, 49, 0.9);
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
         }
         
         .timer-container {
@@ -49,6 +67,7 @@
             margin-left: auto;
             margin-right: auto;
             margin-bottom: 15px;
+            backdrop-filter: blur(5px);
         }
         
         #timer {
@@ -75,6 +94,7 @@
             text-decoration: none;
             display: inline-block;
             transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
         }
         
         .join-button:hover {
@@ -94,7 +114,8 @@
             max-width: 750px;
             margin: 0 auto;
         }
-/* Кнопка для открытия модального окна */
+        
+        /* Кнопка для открытия модального окна */
         .open-modal-button {
             background-color: rgba(232, 119, 49, 0.2);
             border: none;
@@ -105,9 +126,11 @@
             cursor: pointer;
             margin: 0px 0;
             transition: all 0.3s ease;
-             display: inline-block;
+            display: inline-block;
             white-space: nowrap;
+            backdrop-filter: blur(5px);
         }
+        
         /* Стили для модального окна */
         .modal {
             display: none;
@@ -189,16 +212,21 @@
             }
         }
 
-        
-
         .open-modal-button:hover {
             background-color: rgba(241, 100, 12, 0.512);
             transform: scale(1.02);
+        }
+        
+        .spacer {
+            display: block;
+            width: 100%;
         }
     </style>
 </head>
 
 <body>
+    <!-- Canvas для интерактивного фона -->
+    <canvas id="particles-canvas"></canvas>
 
     <div class="container">
         <h1>СИНТЕЗ ANARXGRIF</h1>
@@ -208,14 +236,9 @@
             <div>Обновление синтеза через</div>
             <div id="timer">00:00:00</div>
         </div>
-<div class="spacer" style="height: 13px;"></div>
+        
+        <div class="spacer" style="height: 13px;"></div>
 
-<style>
-.spacer {
-    display: block;
-    width: 100%;
-}
-</style>
         <!-- Второй таймер -->
         <div class="timer-container">
             <div>Дамир зашёл в геншин</div>
@@ -223,13 +246,12 @@
             <div>назад</div>
         </div>
 
-            
-            <!-- Кнопка "Хочешь присоединиться?" -->
-            <a href="https://open.spotify.com/blend/taste-match/8b679bf62b4e6018?si=qU2XmmrZSIWPiFiMVsY1PQ&fallback=getapp&blendDecoration=5f9c38d2" 
-               class="join-button" 
-               target="_blank">
-                Хочешь присоединиться?
-            </a>
+        <!-- Кнопка "Хочешь присоединиться?" -->
+        <a href="https://open.spotify.com/blend/taste-match/8b679bf62b4e6018?si=qU2XmmrZSIWPiFiMVsY1PQ&fallback=getapp&blendDecoration=5f9c38d2" 
+           class="join-button" 
+           target="_blank">
+            Хочешь присоединиться?
+        </a>
 
         <!-- Кнопки -->
         <div class="buttons-container">
@@ -237,16 +259,9 @@
             <button class="open-modal-button" onclick="openModal()">
                 Content not available/синтеза нет
             </button>
-
         </div>
-    <div class="spacer" style="height: 50px;"></div>
-
-<style>
-.spacer {
-    display: block;
-    width: 100%;
-}
-</style>
+        
+        <div class="spacer" style="height: 50px;"></div>
         
         <div class="spotify-player">
             <iframe 
@@ -279,6 +294,150 @@
     </div>
 
     <script>
+        // ========== КОД ДЛЯ ИНТЕРАКТИВНОГО ФОНА ==========
+        
+        // Получаем canvas и его контекст
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Устанавливаем размеры canvas равными размерам окна
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        // Вызываем при загрузке и изменении размера окна
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Массив для хранения частиц
+        let particles = [];
+        
+        // Количество частиц (можно настроить)
+        const particleCount = 100;
+        
+        // Цвета частиц в оранжевой гамме
+        const particleColors = [
+            '#e87731', '#f28c3c', '#f5a142', '#f8b648', '#fbcb4e'
+        ];
+        
+        // Класс для создания частиц
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 2 - 1;
+                this.color = particleColors[Math.floor(Math.random() * particleColors.length)];
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+            
+            // Обновление позиции частицы
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                // Если частица выходит за границы, возвращаем её
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            
+            // Отрисовка частицы
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.opacity;
+                ctx.fill();
+            }
+        }
+        
+        // Создаем частицы
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+        
+        // Функция для соединения частиц линиями
+        function connectParticles() {
+            const maxDistance = 150;
+            
+            for (let a = 0; a < particles.length; a++) {
+                for (let b = a; b < particles.length; b++) {
+                    const dx = particles[a].x - particles[b].x;
+                    const dy = particles[a].y - particles[b].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < maxDistance) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = particles[a].color;
+                        ctx.globalAlpha = (maxDistance - distance) / maxDistance * 0.2;
+                        ctx.lineWidth = 1;
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+        
+        // Взаимодействие с курсором мыши
+        let mouseX = null;
+        let mouseY = null;
+        let mouseRadius = 100;
+        
+        canvas.addEventListener('mousemove', function(event) {
+            mouseX = event.x;
+            mouseY = event.y;
+        });
+        
+        canvas.addEventListener('mouseout', function() {
+            mouseX = null;
+            mouseY = null;
+        });
+        
+        // Анимация частиц
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Обновляем и отрисовываем каждую частицу
+            for (let i = 0; i < particles.length; i++) {
+                // Взаимодействие с курсором мыши
+                if (mouseX !== null && mouseY !== null) {
+                    const dx = particles[i].x - mouseX;
+                    const dy = particles[i].y - mouseY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < mouseRadius) {
+                        // Отталкивание от курсора
+                        const force = (mouseRadius - distance) / mouseRadius;
+                        particles[i].x += dx / distance * force * 5;
+                        particles[i].y += dy / distance * force * 5;
+                    }
+                }
+                
+                particles[i].update();
+                particles[i].draw();
+            }
+            
+            // Соединяем частицы линиями
+            connectParticles();
+            
+            // Запускаем анимацию снова
+            requestAnimationFrame(animateParticles);
+        }
+        
+        // Инициализация и запуск анимации
+        initParticles();
+        animateParticles();
+        
+        // ========== ОРИГИНАЛЬНЫЙ КОД САЙТА ==========
+        
         function updateTimer() {
             const now = new Date();
             const target = new Date();
@@ -332,9 +491,9 @@
             // Форматируем время с ведущими нулями
             const formattedTime = 
                 String(days) + 'д ' + 
-                String(hours).padStart(2, '0') + ':' + 
-                String(minutes).padStart(2, '0') + ':' + 
-                String(seconds).padStart(2, '0');
+                String(hours).padStart(2, '0') + 'ч ' + 
+                String(minutes).padStart(2, '0') + 'м ' + 
+                String(seconds).padStart(2, '0') + 'с ';
             
             // Обновляем элемент второго таймера
             document.getElementById('timer2').textContent = formattedTime;
@@ -374,6 +533,3 @@
     </script>
 </body>
 </html>
-
-
-
