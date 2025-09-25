@@ -48,9 +48,16 @@
             max-width: 750px;
             margin-left: auto;
             margin-right: auto;
+            margin-bottom: 15px;
         }
         
         #timer {
+            font-weight: bold;
+            color: #e87731;
+            font-size: 1.2em;
+        }
+        
+        #timer2 {
             font-weight: bold;
             color: #e87731;
             font-size: 1.2em;
@@ -196,10 +203,24 @@
     <div class="container">
         <h1>СИНТЕЗ ANARXGRIF</h1>
         
-        <!-- Таймер -->
+        <!-- Первый таймер -->
         <div class="timer-container">
             <div>Обновление синтеза через</div>
             <div id="timer">00:00:00</div>
+        </div>
+<div class="spacer" style="height: 50px;"></div>
+
+<style>
+.spacer {
+    display: block;
+    width: 100%;
+}
+</style>
+        <!-- Второй таймер -->
+        <div class="timer-container">
+            <div>Дамир зашёл в геншин</div>
+            <div id="timer2">00:00:00</div>
+            <div>назад</div>
         </div>
 
 <div class="spacer" style="height: 13px;"></div>
@@ -296,11 +317,44 @@
             document.getElementById('timer').textContent = formattedTime;
         }
         
-        // Обновляем таймер сразу при загрузке
-        updateTimer();
+        function updateTimer2() {
+            const now = new Date();
+            // Устанавливаем начальную дату: 24 сентября 2025 года 22:57
+            const startDate = new Date(2025, 8, 24, 22, 57, 0); // Месяцы в JS: 0-январь, 8-сентябрь
+            
+            // Вычисляем разницу во времени (сколько прошло с начальной даты)
+            const diff = now - startDate;
+            
+            // Если дата еще не наступила, показываем 00:00:00
+            if (diff < 0) {
+                document.getElementById('timer2').textContent = '00:00:00';
+                return;
+            }
+            
+            // Преобразуем разницу в дни, часы, минуты и секунды
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            // Форматируем время с ведущими нулями
+            const formattedTime = 
+                String(days) + 'д ' + 
+                String(hours).padStart(2, '0') + ':' + 
+                String(minutes).padStart(2, '0') + ':' + 
+                String(seconds).padStart(2, '0');
+            
+            // Обновляем элемент второго таймера
+            document.getElementById('timer2').textContent = formattedTime;
+        }
         
-        // Обновляем таймер каждую секунду
+        // Обновляем таймеры сразу при загрузке
+        updateTimer();
+        updateTimer2();
+        
+        // Обновляем таймеры каждую секунду
         setInterval(updateTimer, 1000);
+        setInterval(updateTimer2, 1000);
 
         // Функции для работы с модальным окном
         function openModal() {
@@ -328,4 +382,3 @@
     </script>
 </body>
 </html>
-
