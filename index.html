@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Text Width Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(135deg, #1a1f2b 0%, #0d1117 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(40, 120, 40, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(40, 80, 120, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(20, 25, 35, 0.9);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid #3a506b;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #5fc963, #3a8c5f, #5fc963);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            color: #5fc963;
+            text-shadow: 0 0 10px rgba(95, 201, 99, 0.5);
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            color: #8b9bb4;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .input-section {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .input-section label {
+            display: block;
+            margin-bottom: 0.8rem;
+            color: #8b9bb4;
+            font-size: 0.9rem;
+        }
+
+        .minecraft-input {
+            width: 100%;
+            padding: 1.2rem;
+            background: rgba(15, 20, 30, 0.8);
+            border: 2px solid #3a506b;
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .minecraft-input:focus {
+            border-color: #5fc963;
+            box-shadow: 0 0 15px rgba(95, 201, 99, 0.3), inset 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-section {
+            background: rgba(15, 20, 30, 0.8);
+            border: 2px solid #3a506b;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-section h3 {
+            color: #8b9bb4;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .pixel-count {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd166;
+            text-shadow: 0 0 10px rgba(255, 209, 102, 0.5);
+            text-align: center;
+            margin: 1rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .char-widths {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .width-category {
+            background: rgba(15, 20, 30, 0.8);
+            border: 2px solid #3a506b;
+            border-radius: 10px;
+            padding: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .width-category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border-color: #5fc963;
+        }
+
+        .width-category h4 {
+            color: #ffd166;
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chars-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .char-item {
+            background: rgba(40, 50, 70, 0.8);
+            border: 1px solid #5a6b8c;
+            border-radius: 5px;
+            padding: 0.5rem;
+            font-size: 0.7rem;
+            transition: all 0.2s ease;
+        }
+
+        .char-item:hover {
+            background: rgba(95, 201, 99, 0.2);
+            border-color: #5fc963;
+            transform: scale(1.1);
+        }
+
+        .footer {
+            margin-top: 2.5rem;
+            text-align: center;
+            color: #5a6b8c;
+            font-size: 0.7rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #2a3547;
+        }
+
+        .minecraft-block {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-size: cover;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .block-1 {
+            top: 10%;
+            left: 5%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><rect width="60" height="60" fill="%235fc963"/><path d="M0,0 L60,0 L60,10 L50,10 L50,20 L40,20 L40,30 L30,30 L30,40 L20,40 L20,50 L10,50 L10,60 L0,60 Z" fill="%233a8c5f"/><path d="M60,0 L60,60 L50,60 L50,50 L40,50 L40,40 L30,40 L30,30 L20,30 L20,20 L10,20 L10,10 L0,10 L0,0 Z" fill="%2378d87c"/></svg>');
+        }
+
+        .block-2 {
+            bottom: 15%;
+            right: 8%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><rect width="60" height="60" fill="%23ffd166"/><path d="M0,0 L60,0 L60,10 L50,10 L50,20 L40,20 L40,30 L30,30 L30,40 L20,40 L20,50 L10,50 L10,60 L0,60 Z" fill="%23e6b450"/><path d="M60,0 L60,60 L50,60 L50,50 L40,50 L40,40 L30,40 L30,30 L20,30 L20,20 L10,20 L10,10 L0,10 L0,0 Z" fill="%23ffdf99"/></svg>');
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .pixel-count {
+                font-size: 1.8rem;
+            }
+            
+            .char-widths {
+                grid-template-columns: 1fr;
+            }
+            
+            .minecraft-block {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="minecraft-block block-1"></div>
+    <div class="minecraft-block block-2"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Minecraft Text Width Calculator</h1>
+            <p>Введите текст, чтобы мгновенно узнать его ширину в пикселях Minecraft</p>
+        </div>
+
+        <div class="input-section">
+            <label for="text-input">ВВЕДИТЕ ТЕКСТ:</label>
+            <input type="text" id="text-input" class="minecraft-input" placeholder="Начните вводить текст...">
+        </div>
+
+        <div class="result-section">
+            <h3>Ширина текста:</h3>
+            <div class="pixel-count pulse" id="pixel-count">0 пикселей</div>
+        </div>
+
+        <div class="char-widths">
+            <div class="width-category">
+                <h4>2 пикселя:</h4>
+                <div class="chars-list">
+                    <div class="char-item">пробел</div>
+                </div>
+            </div>
+            
+            <div class="width-category">
+                <h4>4 пикселя:</h4>
+                <div class="chars-list">
+                    <div class="char-item">г</div>
+                    <div class="char-item">к</div>
+                </div>
+            </div>
+            
+            <div class="width-category">
+                <h4>5 пикселей:</h4>
+                <div class="chars-list">
+                    <div class="char-item">А</div>
+                    <div class="char-item">Б</div>
+                    <div class="char-item">В</div>
+                    <div class="char-item">Г</div>
+                    <div class="char-item">E</div>
+                    <div class="char-item">З</div>
+                    <div class="char-item">И</div>
+                    <div class="char-item">К</div>
+                    <div class="char-item">Л</div>
+                    <div class="char-item">М</div>
+                    <div class="char-item">Н</div>
+                    <div class="char-item">О</div>
+                    <div class="char-item">П</div>
+                    <div class="char-item">Р</div>
+                    <div class="char-item">С</div>
+                    <div class="char-item">Т</div>
+                    <div class="char-item">У</div>
+                    <div class="char-item">Х</div>
+                    <div class="char-item">Ч</div>
+                    <div class="char-item">Ь</div>
+                    <div class="char-item">Э</div>
+                    <div class="char-item">Я</div>
+                    <div class="char-item">а</div>
+                    <div class="char-item">б</div>
+                    <div class="char-item">в</div>
+                    <div class="char-item">е</div>
+                    <div class="char-item">ж</div>
+                    <div class="char-item">з</div>
+                    <div class="char-item">и</div>
+                    <div class="char-item">л</div>
+                    <div class="char-item">м</div>
+                    <div class="char-item">н</div>
+                    <div class="char-item">о</div>
+                    <div class="char-item">п</div>
+                    <div class="char-item">р</div>
+                    <div class="char-item">с</div>
+                    <div class="char-item">т</div>
+                    <div class="char-item">у</div>
+                    <div class="char-item">ф</div>
+                    <div class="char-item">х</div>
+                    <div class="char-item">ц</div>
+                    <div class="char-item">ч</div>
+                    <div class="char-item">ш</div>
+                    <div class="char-item">щ</div>
+                    <div class="char-item">ъ</div>
+                    <div class="char-item">ы</div>
+                    <div class="char-item">ь</div>
+                    <div class="char-item">э</div>
+                    <div class="char-item">я</div>
+                </div>
+            </div>
+            
+            <div class="width-category">
+                <h4>6 пикселей:</h4>
+                <div class="chars-list">
+                    <div class="char-item">Д</div>
+                    <div class="char-item">Ц</div>
+                    <div class="char-item">Ъ</div>
+                    <div class="char-item">Ю</div>
+                    <div class="char-item">д</div>
+                </div>
+            </div>
+            
+            <div class="width-category">
+                <h4>7 пикселей:</h4>
+                <div class="chars-list">
+                    <div class="char-item">Ж</div>
+                    <div class="char-item">Ф</div>
+                    <div class="char-item">Ш</div>
+                    <div class="char-item">Ы</div>
+                    <div class="char-item">ю</div>
+                </div>
+            </div>
+            
+            <div class="width-category">
+                <h4>8 пикселей:</h4>
+                <div class="chars-list">
+                    <div class="char-item">Щ</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Создано для сообщества Minecraft | Ширина текста в пикселях</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const textInput = document.getElementById('text-input');
+            const pixelCount = document.getElementById('pixel-count');
+            
+            // Карта ширины символов
+            const charWidths = {
+                ' ': 2,
+                'г': 4, 'к': 4,
+                'А': 5, 'Б': 5, 'В': 5, 'Г': 5, 'E': 5, 'З': 5, 'И': 5, 'К': 5, 'Л': 5, 'М': 5, 
+                'Н': 5, 'О': 5, 'П': 5, 'Р': 5, 'С': 5, 'Т': 5, 'У': 5, 'Х': 5, 'Ч': 5, 'Ь': 5, 
+                'Э': 5, 'Я': 5, 'а': 5, 'б': 5, 'в': 5, 'е': 5, 'ж': 5, 'з': 5, 'и': 5, 'л': 5, 
+                'м': 5, 'н': 5, 'о': 5, 'п': 5, 'р': 5, 'с': 5, 'т': 5, 'у': 5, 'ф': 5, 'х': 5, 
+                'ц': 5, 'ч': 5, 'ш': 5, 'щ': 5, 'ъ': 5, 'ы': 5, 'ь': 5, 'э': 5, 'я': 5,
+                'Д': 6, 'Ц': 6, 'Ъ': 6, 'Ю': 6, 'д': 6,
+                'Ж': 7, 'Ф': 7, 'Ш': 7, 'Ы': 7, 'ю': 7,
+                'Щ': 8
+            };
+            
+            // Функция для расчета ширины текста
+            function calculateTextWidth(text) {
+                let totalWidth = 0;
+                
+                for (let i = 0; i < text.length; i++) {
+                    const char = text[i];
+                    // Если символ есть в карте, используем его ширину, иначе используем ширину по умолчанию (5)
+                    totalWidth += charWidths[char] || 5;
+                }
+                
+                return totalWidth;
+            }
+            
+            // Обработчик события для ввода (обновление в реальном времени)
+            textInput.addEventListener('input', function() {
+                const text = textInput.value;
+                const width = calculateTextWidth(text);
+                pixelCount.textContent = `${width} пикселей`;
+                
+                // Добавляем анимацию при изменении
+                pixelCount.classList.remove('pulse');
+                void pixelCount.offsetWidth; // Сбрасываем анимацию
+                pixelCount.classList.add('pulse');
+            });
+            
+            // Инициализация при загрузке
+            const initialText = textInput.value;
+            const initialWidth = calculateTextWidth(initialText);
+            pixelCount.textContent = `${initialWidth} пикселей`;
+        });
+    </script>
+</body>
+</html>
